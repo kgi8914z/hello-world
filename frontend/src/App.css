@@ -24,9 +24,45 @@ body {
   margin-bottom: 2rem;
 }
 
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
 .dashboard-header h1 {
   font-size: 1.8rem;
   color: #fff;
+}
+
+.last-update {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+.btn-refresh {
+  padding: 0.5rem 1rem;
+  background: #238636;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.btn-refresh:hover {
+  background: #2ea043;
+}
+
+.btn-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .summary-cards {
