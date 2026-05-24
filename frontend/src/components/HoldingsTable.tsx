@@ -1,4 +1,4 @@
-import { Holding } from "../api/client";
+import { type Holding } from "../api/client";
 
 interface Props {
   holdings: Holding[];

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getPortfolioSummary, PortfolioSummary } from "../api/client";
+import { getPortfolioSummary, type PortfolioSummary } from "../api/client";
 import HoldingsTable from "./HoldingsTable";
 import TradeForm from "./TradeForm";
 import SyncButton from "./SyncButton";
