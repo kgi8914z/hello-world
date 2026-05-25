@@ -1,22 +1,46 @@
 from fastapi import APIRouter, HTTPException
-from ..models.schemas import MarketQuote, SyncStatus
+from pydantic import BaseModel
+from ..models.schemas import SyncStatus
 from ..services.investing_com import InvestingComClient
 from ..services.market_data import MarketDataService
 from ..services.portfolio_service import portfolio_service
-import os
 
 router = APIRouter(prefix="/api/market", tags=["market"])
 
 
 def _get_investing_client() -> InvestingComClient:
-    return InvestingComClient(
-        email=os.getenv("INVESTING_COM_EMAIL"),
-        password=os.getenv("INVESTING_COM_PASSWORD"),
-    )
+    return InvestingComClient()
 
 
 def _get_market_service() -> MarketDataService:
     return MarketDataService(investing_client=_get_investing_client())
+
+
+@router.get("/auth/status")
+async def auth_status():
+    client = _get_investing_client()
+    try:
+        await client._get_client()
+        return {
+            "logged_in": client.is_logged_in(),
+            "message": "로그인됨" if client.is_logged_in() else "로그인 필요. 'python login_helper.py' 실행 또는 설정에서 쿠키를 입력하세요.",
+        }
+    finally:
+        await client.close()
+
+
+class CookieInput(BaseModel):
+    cookies: dict[str, str]
+
+
+@router.post("/auth/cookies")
+async def save_cookies(data: CookieInput):
+    client = _get_investing_client()
+    try:
+        client.save_cookies_from_dict(data.cookies)
+        return {"success": True, "message": f"쿠키 {len(data.cookies)}개 저장됨"}
+    finally:
+        await client.close()
 
 
 @router.get("/quote/{ticker}")
@@ -51,11 +75,17 @@ async def get_portfolio_quotes():
 async def sync_portfolio():
     client = _get_investing_client()
     try:
+        await client._get_client()
+        if not client.is_logged_in():
+            return SyncStatus(
+                success=False,
+                message="investing.com 로그인이 필요합니다. 'python login_helper.py'를 실행하거나 설정에서 쿠키를 입력하세요.",
+            )
         positions = await client.get_portfolio_positions()
         if not positions:
             return SyncStatus(
                 success=False,
-                message="investing.com 포트폴리오를 가져올 수 없습니다. .env에 로그인 정보를 확인하세요.",
+                message="포트폴리오 데이터를 가져올 수 없습니다. 쿠키가 만료되었을 수 있습니다.",
             )
         count = portfolio_service.sync_from_positions(positions)
         return SyncStatus(
@@ -68,7 +98,7 @@ async def sync_portfolio():
 
 
 @router.get("/history/{ticker}")
-async def get_history(ticker: str, period: str = "P1M"):
+async def get_history(ticker: str):
     client = _get_investing_client()
     try:
         data = await client.get_historical_data(ticker, "", "")

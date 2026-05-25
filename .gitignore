@@ -6,6 +6,7 @@ build/
 .venv/
 venv/
 .env
+.cookies.json
 *.csv
 *.json
 !package.json

@@ -240,8 +240,74 @@ body {
 
 .sync-container {
   display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.sync-buttons {
+  display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
+}
+
+.auth-status {
+  font-size: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.auth-status.online {
+  background: rgba(63, 185, 80, 0.15);
+  color: #3fb950;
+}
+
+.auth-status.offline {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+
+.btn-cookie {
+  background: #6e40c9;
+}
+
+.btn-cookie:hover {
+  background: #8957e5;
+}
+
+.cookie-input-panel {
+  background: #161b22;
+  border: 1px solid #2d3139;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 350px;
+}
+
+.cookie-help {
+  font-size: 0.75rem;
+  color: #8b949e;
+  line-height: 1.4;
+}
+
+.cookie-textarea {
+  width: 100%;
+  padding: 0.5rem;
+  background: #0d1117;
+  border: 1px solid #2d3139;
+  border-radius: 4px;
+  color: #e1e4e8;
+  font-family: monospace;
+  font-size: 0.8rem;
+  resize: vertical;
+}
+
+.cookie-textarea:focus {
+  outline: none;
+  border-color: #58a6ff;
 }
 
 .sync-message {

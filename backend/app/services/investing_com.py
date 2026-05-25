@@ -1,12 +1,15 @@
 import httpx
 from bs4 import BeautifulSoup
 from datetime import datetime
+from pathlib import Path
+import json
 import logging
 
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://www.investing.com"
 API_URL = "https://api.investing.com/api"
+COOKIE_FILE = Path(__file__).parent / ".cookies.json"
 
 HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -37,38 +40,45 @@ TICKER_TO_SLUG = {
 
 
 class InvestingComClient:
-    def __init__(self, email: str | None = None, password: str | None = None):
-        self.email = email
-        self.password = password
+    def __init__(self, cookie_file: Path | None = None):
+        self._cookie_file = cookie_file or COOKIE_FILE
         self._client: httpx.AsyncClient | None = None
         self._authenticated = False
         self._pair_ids: dict[str, int] = {}
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None:
+            cookies = self._load_cookies()
             self._client = httpx.AsyncClient(
                 headers=HEADERS,
+                cookies=cookies,
                 follow_redirects=True,
-                timeout=30.0,
+                timeout=10.0,
             )
+            self._authenticated = bool(cookies)
         return self._client
 
-    async def authenticate(self) -> bool:
-        if not self.email or not self.password:
-            return False
-        client = await self._get_client()
+    def _load_cookies(self) -> dict[str, str]:
+        if not self._cookie_file.exists():
+            logger.info("쿠키 파일 없음. 'python login_helper.py'를 먼저 실행하세요.")
+            return {}
         try:
-            resp = await client.post(
-                f"{BASE_URL}/members-admin/auth/sign-in",
-                json={"email": self.email, "password": self.password},
-            )
-            self._authenticated = resp.status_code == 200
-            if self._authenticated:
-                logger.info("investing.com 로그인 성공")
+            raw = json.loads(self._cookie_file.read_text())
+            return {c["name"]: c["value"] for c in raw if "name" in c and "value" in c}
+        except (json.JSONDecodeError, KeyError) as e:
+            logger.error(f"쿠키 파일 파싱 실패: {e}")
+            return {}
+
+    def save_cookies_from_dict(self, cookies: dict[str, str]):
+        data = [{"name": k, "value": v, "domain": ".investing.com"} for k, v in cookies.items()]
+        self._cookie_file.parent.mkdir(parents=True, exist_ok=True)
+        self._cookie_file.write_text(json.dumps(data, indent=2))
+        logger.info(f"쿠키 {len(data)}개 저장됨")
+
+    def is_logged_in(self) -> bool:
+        if self._client is not None:
             return self._authenticated
-        except httpx.HTTPError as e:
-            logger.error(f"investing.com 로그인 실패: {e}")
-            return False
+        return self._cookie_file.exists()
 
     async def search(self, query: str) -> list[dict]:
         client = await self._get_client()
@@ -182,10 +192,9 @@ class InvestingComClient:
         return None
 
     async def get_portfolio_positions(self) -> list[dict]:
-        if not self._authenticated:
-            if not await self.authenticate():
-                return []
         client = await self._get_client()
+        if not self._authenticated:
+            return []
         try:
             resp = await client.get(f"{BASE_URL}/portfolio/")
             if resp.status_code != 200:

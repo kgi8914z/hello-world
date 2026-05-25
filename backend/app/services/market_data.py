@@ -31,10 +31,13 @@ class MarketDataService:
     async def get_quote(self, ticker: str) -> dict | None:
         ticker = ticker.upper()
 
-        if self.investing:
-            quote = await self.investing.get_quote(ticker)
-            if quote:
-                return quote
+        if self.investing and self.investing.is_logged_in():
+            try:
+                quote = await self.investing.get_quote(ticker)
+                if quote:
+                    return quote
+            except Exception as e:
+                logger.warning(f"investing.com 실패 ({ticker}): {e}")
 
         yf_quote = self._yfinance_quote(ticker)
         if yf_quote:
