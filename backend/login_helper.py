@@ -33,21 +33,16 @@ def main():
             locale="ko-KR",
         )
         page = context.new_page()
-        page.goto("https://www.investing.com/members-admin/auth/sign-in")
+        page.goto("https://www.investing.com/")
 
         print("브라우저에서 로그인을 완료해주세요...")
-        print("(Sign in with Google 클릭 → Google 계정 선택/로그인)\n")
+        print("1) 우측 상단 'Sign In' 클릭")
+        print("2) 'Sign in with Google' 클릭")
+        print("3) Google 계정 선택/로그인")
+        print("\n로그인 완료 후 이 창에서 아무 키나 누르세요...")
 
-        try:
-            page.wait_for_url("**/members-admin/profile*", timeout=300_000)
-        except Exception:
-            page.wait_for_url("**investing.com/**", timeout=300_000)
-            if "sign-in" not in page.url:
-                pass
-            else:
-                print("로그인이 완료되지 않았습니다.")
-                browser.close()
-                sys.exit(1)
+        page.wait_for_timeout(5000)
+        input("\n>>> 로그인을 완료했으면 Enter를 누르세요: ")
 
         cookies = context.cookies()
         investing_cookies = [c for c in cookies if "investing.com" in c.get("domain", "")]
