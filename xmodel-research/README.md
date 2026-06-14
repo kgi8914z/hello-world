@@ -3,6 +3,10 @@
 Scientific Analog **XMODEL**(SystemVerilog 이벤트 구동 아날로그/혼성신호 시뮬레이터)을
 **LLM(Claude)** 과 결합해 회로/시스템의 **자동 모델링 · 결과 분석 · 프레임워크화**를 연구한다.
 
+## 연속성 (컨텍스트가 비워져도 이어가기)
+- **[`../CLAUDE.md`](../CLAUDE.md)** — 세션 시작 시 항상 먼저 읽는 진입점/작업 프로토콜
+- **[PROGRESS.md](./PROGRESS.md)** — 날짜별 누적 진행 로그(학습/결정/다음할일). 새로 알게 되면 즉시 기록.
+
 ## 문서
 - **[XMODEL_LLM_Framework_Report.md](./XMODEL_LLM_Framework_Report.md)** — 종합 보고서 & 핸드오프 브리프 (메인 산출물)
   - XMODEL 생태계 조사 / 프레임워크 아키텍처 / 환경 발견 체크리스트 / Python 구현 청사진 / 단계별 로드맵
