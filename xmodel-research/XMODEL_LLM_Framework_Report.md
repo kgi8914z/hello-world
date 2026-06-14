@@ -81,8 +81,7 @@ XMODEL 워크플로우의 모든 산출물이 **텍스트/구조화 데이터**�
 
 ### 2.4 최신 업데이트 기능 (2024–2026)
 > 공개 출처(ASP-DAC 2025 논문, IEEE/SSCS 웨비나, AVM 월간 뉴스레터, Semiwiki, 보도자료) 기준으로 정리한
-> "최근 추가/강조되는" 기능. 깊은 릴리스 노트는 사이트 접근 차단(403)으로 못 받았으니
-> **정확한 버전 번호·릴리스 노트는 §4에서 설치본의 `version`/`README`/`CHANGELOG`로 확정**하라. `⚠️ 검증필요`
+> "최근 추가/강조되는" 기능. **정식 최신 버전 및 상세 changelog는 아래 §2.5(XMODEL 2026.06 공식 릴리스 노트) 참조.**
 
 1. **실리콘 포토닉스(Silicon Photonics) 모델링 — 가장 최신 핵심 확장** (ASP-DAC 2025, 2025-01; AVM 2024-12)
    - XMODEL이 **포토닉스 엔지니어 전용 프리미티브**를 제공. 광소자(optical device)를 **등가 다중포트 전송선
@@ -122,6 +121,56 @@ XMODEL 워크플로우의 모든 산출물이 **텍스트/구조화 데이터**�
 > **요약**: 최근 흐름의 무게중심은 ① **실리콘 포토닉스로의 도메인 확장**(가장 큰 신규 기능), ② **데이터컨버터/
 > 메모리/이미지센서 등 응용 모델 사례 축적**, ③ **Cadence ADE 통합 심화**, ④ **통계/BER 분석**이다.
 > 프레임워크 설계 시 포토닉스 프리미티브와 도메인별 측정 지표를 처음부터 확장 포인트로 열어둘 것.
+
+### 2.5 XMODEL 2026.06 공식 릴리스 노트 (정식 버전)
+> 출처: Scientific Analog 공식 릴리스 공지(2026-06, CEO Jaeha Kim). **이것이 권위 있는 1차 자료**이며,
+> 공개 웹 조사(§2.4)보다 우선한다.
+>
+> **확정 사실**: 최신 정식 버전 = **XMODEL 2026.06**, 버전 체계 = **YYYY.MM**. (§2.4의 "버전 미확정" 메모를 본 절이 대체.)
+
+**① XWAVE (파형 뷰어) — 이번 릴리스 하이라이트**
+- **커서 2개 지원**: 값 프로빙 커서가 1→2개로 확장(두 지점 간 Δt/Δv 측정 용이). ← 사용자측에서 요청했던 기능.
+- bit-vector 신호를 **아날로그/디지털 표시 모드** 양쪽으로 표시.
+- bit-vector 값을 **2진/8진/16진/부호없는·부호있는 10진**으로 표시.
+- `plot_fourier()` / `plot_psd()` API 버그 수정.
+
+**② EQCHECK — 신규 VS Code 확장 (모델 ↔ 회로 등가성 검증 GUI)**  ← 프레임워크 관점 최중요
+- 모델과 회로 간 **등가성 검증(equivalence checking)** GUI 프론트엔드를 **VS Code 확장**으로 제공.
+- 포트별 replay/checker 설정 커스터마이즈.
+- DUT 계층 내 신호 선택(상위 계층에 등가 신호가 있어도 DUT 내부에서 선택).
+- `--netlist`/`--netlist-format` 옵션: 기준 회로 netlist를 **spice/spectre/cdl** 포맷으로 지정, 기준 파형의 대체 신호 식별.
+- `-timetol`을 아날로그 파형에 grace period로 적용. `--vtimetol`/`--itimetol`로 개별 override.
+
+**③ MODELZEN (자동 모델 생성) — 대폭 강화**
+- 대규모 서브회로/소자 netlist 처리 **효율 개선**(등가 노드 식별·병렬 동일 서브회로 식별 알고리즘 고속화).
+- top-level에서 **도달 가능한 서브회로만** topology 분석·회로 축약 수행.
+- 신호명 정규화(`net<2>_dmy` 등) — bit-blast 포맷(`devo_options["format_bitblast"]`).
+- SPICE netlist에서 **따옴표 없는 단순 괄호 표현식**을 파라미터 값으로 허용.
+- 개별 characterization 스레드 에러를 메인 로그로 전파.
+- `--include`(섹션 지정 추가 파일 포함), GUI에 include 파일 목록 표시(`show_incfiles`).
+- `--debug-netlist`(입력 netlist 파싱 상세 로깅).
+- **`XMODEL_UDMDATA` 섹션**: UDM 룩업테이블 데이터를 주석으로 임베드 → **elaboration 가속**.
+- UDM이 `vbias`/`vpwr`/`vgnd` 포트에 **전압 체커** 임베드.
+- MODELZEN 속성에 **empy 템플릿 표현식** 지원(코너별 변수 `dev_corner["modelzen"]`).
+
+**④ GLISTER**
+- MODELZEN 인스턴스 속성에 쓰이는 **empy 표현식** 지원.
+
+**⑤ XMODEL 코어 프리미티브/유틸리티**
+- 채널 모델 피팅 유틸 **`sparam_to_tf`/`sparam_to_tline`** 정확도·견고성 개선(S-파라미터→전달함수/전송선).
+- `check_delay`/`check_delay_bit`가 **pass/fail 구간 주기 + pass/fail 트리거 이벤트 수**까지 보고.
+- `xmodel` 런처/기본 설정이 **`xmverilog`와 `xrun`의 옵션 스타일 차이**를 지원.
+- `check_value`·`check_value_real`·`check_delay`·`check_delay_bit` 파라미터명 갱신(`tgrace`,`tgrace_init`,`ngrace_init`).
+- `pwl_var`(파일 디스크립터 누수), `ilo`/`interp`/`interp_var` 프리미티브 버그 수정.
+
+**프레임워크 함의 (중요 — 설계 보정)**
+- **확정된 런처/시뮬레이터 호출**: `xmodel` 런처가 **`xmverilog`(자체/VCS 스타일)** 와 **`xrun`(Cadence Xcelium)** 을 모두 구동.
+  → §4·§6의 어댑터를 이 두 경로로 구현(이전 추정 `vcs ...` 대신 `xmodel`/`xmverilog`/`xrun` 우선).
+- **EQCHECK = 자동 검증의 결정적 훅**: 모델↔회로 등가검증을 **CLI 옵션**(`--netlist`,`--netlist-format spice|spectre|cdl`,`--vtimetol`…)으로 구동 가능
+  → LLM 도구로 노출해 **"LLM이 모델 생성 → 회로와 자동 등가검증 → 불일치 시 자동 보정"** 루프를 만든다. `adapters/`에 **`EqcheckAdapter`** 추가.
+- **`check_*` 프리미티브 = 분석 자동화 소스**: `check_value`/`check_delay`가 pass/fail·구간·이벤트수를 보고 → `analysis/`가 이 출력을 직접 파싱해 합불 판정/리포트.
+- **UDM/`XMODEL_UDMDATA`·empy 코너**: 자동 모델링이 **코너별 파라미터화·UDM 룩업·elaboration 가속**을 다루도록 설계.
+- **`sparam_to_tline`**: 실리콘 포토닉스(§2.4)의 전송선 모델링과 직결 → 채널/광링크 자동 모델링 유틸로 활용.
 
 ---
 
@@ -174,8 +223,10 @@ XMODEL 워크플로우의 모든 산출물이 **텍스트/구조화 데이터**�
 
 ### 4.1 툴체인 존재/버전
 ```bash
-# XMODEL / Scientific Analog 도구
-which xwave xrun modelzen glister 2>/dev/null
+# XMODEL / Scientific Analog 도구 (2026.06 기준 런처/도구명 확인됨)
+which xmodel xmverilog xwave modelzen glister eqcheck 2>/dev/null   # xmodel=런처, xmverilog/xrun=시뮬구동
+xmodel -version 2>/dev/null || xmodel --version 2>/dev/null         # 2026.06 확인 (옵션명 ⚠️검증)
+which xrun 2>/dev/null   # Cadence Xcelium 경로 (xmodel이 xrun 스타일도 지원)
 env | grep -iE 'xmodel|scianalog|saflix|modelzen' 
 ls -d /usr/local/* /opt/* 2>/dev/null | grep -iE 'xmodel|scianalog'   # 설치 경로 추정
 cat $XMODEL_HOME/version* 2>/dev/null                                  # 버전 (변수명은 추정)
@@ -234,6 +285,7 @@ LLM에게 아래 도구를 노출하면, 모델 생성→시뮬→분석을 자�
 | `compile_and_run` | top 모듈, 파일목록, 옵션 | 컴파일+시뮬 실행 | 성공여부, 로그, 파형경로 |
 | `read_waveform` | 파형경로, 신호목록, 시간범위 | 파형을 수치로 샘플링 export | 시계열 배열/요약통계 |
 | `measure` | 측정 스펙(예: rise time, overshoot) | 파형에서 지표 계산 | 수치 지표 |
+| `run_eqcheck` | 모델, 기준 netlist(spice/spectre/cdl), 포트맵, tol | EQCHECK로 모델↔회로 등가검증(2026.06 신규) | pass/fail, 불일치 신호/구간 |
 
 → 검증 가능한 도구만 노출하고, **LLM 출력은 항상 도구 실행으로 사실 확인**(환각 차단).
 
@@ -325,11 +377,12 @@ class VcsXModelRunner:
         self.extra_args = extra_args or []
 
     def compile_and_run(self, top, sources, *, defines=None, plusargs=None, workdir=None):
-        # ⚠️ 아래 명령 라인은 추정 — 실제 XMODEL 셋업(컴파일 플래그/라이브러리 링크)으로 교체
-        cmd = ["vcs", "-sverilog", "-full64", f"-top", top, *sources, *self.extra_args]
+        # 2026.06 기준: 'xmodel' 런처가 xmverilog(VCS 스타일)/xrun(Xcelium 스타일)을 구동.
+        # ⚠️ 정확한 서브커맨드/플래그는 §4.4의 예제 구동으로 확정해 교체.
+        cmd = ["xmodel", "xmverilog", "-top", top, *sources, *self.extra_args]   # 또는 ["xmodel","xrun",...]
         proc = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True)
         ok = proc.returncode == 0
-        # 이어서 simv 실행, 파형/측정 추출 — §4.4 결과로 구현
+        # 이어서 시뮬 실행, 파형/측정 추출 — §4.4 결과로 구현
         return SimResult(ok=ok, log=proc.stdout + proc.stderr)
 ```
 
@@ -420,6 +473,9 @@ matplotlib (선택)    # 파형 플롯/리포트 그림
 - A UVM SystemVerilog Testbench for AMS Verification (DVCon): https://dvcon-proceedings.org/wp-content/uploads/A-UVM-SystemVerilog-Testbench-for-AnalogMixed-Signal-Verification-A-Digitally-Programmable-Analog-Filter-Example.pdf
 - SNU MICS XMODEL wiki: https://mics.snu.ac.kr/wiki/xmodel
 - (참고) AMSNet: Netlist Dataset for AMS Circuits: https://arxiv.org/pdf/2405.09045
+
+**정식 릴리스 (1차 자료, 최우선)**
+- XMODEL 2026.06 공식 릴리스 공지 — Scientific Analog(CEO Jaeha Kim) 이메일, 2026-06-07 수신. (changelog 원문은 §2.5에 정리)
 
 **최신 기능(2024–2026) 관련 출처**
 - 실리콘 포토닉스 모델링 (ASP-DAC 2025 초청논문, ACM DL): https://dl.acm.org/doi/10.1145/3658617.3703934

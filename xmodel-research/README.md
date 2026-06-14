@@ -15,6 +15,7 @@ XMODEL이 설치된 서버에 연결된 PC의 Claude에게 위 보고서를 건�
 ## 상태
 - [x] XMODEL 생태계 조사 (공개 자료 기반)
 - [x] 최신 업데이트 기능(2024–2026) 조사 — 실리콘 포토닉스·도메인 모델 확장·Cadence ADE 통합·통계/BER (보고서 §2.4)
+- [x] **XMODEL 2026.06 공식 릴리스 노트 반영** — XWAVE 2-커서, **EQCHECK(모델↔회로 등가검증) 신규**, MODELZEN 강화, `xmodel`/`xmverilog`/`xrun` 런처 확정 (보고서 §2.5)
 - [x] LLM 통합 프레임워크 설계
 - [x] Python 구현 청사진 + 단계별 로드맵
 - [ ] (서버에서) 환경 발견 + 예제 Ground Truth 확보 → 실어댑터 구현
