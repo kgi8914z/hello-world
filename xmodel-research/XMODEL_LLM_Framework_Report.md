@@ -79,6 +79,50 @@ XMODEL 워크플로우의 모든 산출물이 **텍스트/구조화 데이터**�
 추정되는 검증 대상: XMODEL 설치 경로/환경변수, 컴파일·런 명령(또는 제공 Makefile/스크립트),
 파형 덤프 포맷·확장자, 배치(batch)/CLI 실행 가능 여부, 라이선스 서버 설정.
 
+### 2.4 최신 업데이트 기능 (2024–2026)
+> 공개 출처(ASP-DAC 2025 논문, IEEE/SSCS 웨비나, AVM 월간 뉴스레터, Semiwiki, 보도자료) 기준으로 정리한
+> "최근 추가/강조되는" 기능. 깊은 릴리스 노트는 사이트 접근 차단(403)으로 못 받았으니
+> **정확한 버전 번호·릴리스 노트는 §4에서 설치본의 `version`/`README`/`CHANGELOG`로 확정**하라. `⚠️ 검증필요`
+
+1. **실리콘 포토닉스(Silicon Photonics) 모델링 — 가장 최신 핵심 확장** (ASP-DAC 2025, 2025-01; AVM 2024-12)
+   - XMODEL이 **포토닉스 엔지니어 전용 프리미티브**를 제공. 광소자(optical device)를 **등가 다중포트 전송선
+     (equivalent multi-port transmission line)** 으로 모델링.
+   - XMODEL의 **Laplace 영역 신호 표현 + 이벤트 구동** 방식을 **광파(optical wave, ~200 THz)** 까지 확장 →
+     기존엔 SPICE/전용 포토닉스 시뮬레이터로만 가능하던 것을 **SystemVerilog 안에서** 처리.
+   - 대상: **WDM(파장분할다중) 트랜시버** = 광소자 + PAM 아날로그 인터페이스 + 온도 캘리브레이션 디지털 제어기를
+     **하나의 SV 시뮬레이션**으로 혼성 검증. (포토닉스+아날로그+디지털 통합 시뮬)
+   - → **프레임워크 함의**: 자동 모델링/분석 대상에 광·전 혼합 링크가 포함될 수 있음. 프리미티브 카탈로그(§5.4)에
+     포토닉스 프리미티브 항목을 별도 분류로 둘 것.
+
+2. **응용 도메인 모델 확장 (AVM 월간 뉴스레터 2024–2025 토픽)**
+   - 최근 뉴스레터가 다룬 모델링 사례: **비동기 SAR-ADC**, **NAND 플래시 메모리**, **CMOS 이미지 센서**,
+     **컴퍼레이터 오프셋 측정**, 실리콘 포토닉스 등. → XMODEL 적용 범위가 데이터컨버터·메모리·이미지센서로 넓어짐.
+   - → 프레임워크의 "대상 회로군" 후보(§8-7)와 직접 연결. 사례별 측정 지표(예: ADC의 INL/DNL/ENOB,
+     플래시의 임계전압 분포)를 `analysis/` 측정 라이브러리에 반영.
+
+3. **Cadence Virtuoso ADE 통합 (Cadence Connections EDA Program)**
+   - GLISTER 기능이 **Cadence Virtuoso ADE** 안으로 통합 → ADE 메뉴로 **테스트벤치 구성·netlist 생성·
+     XMODEL 시뮬 실행·결과 브라우징**을 수행. (초기 통합은 XMODEL 2018.03, 이후 Connections 프로그램으로 심화.)
+   - → 입력 진입점이 Virtuoso GUI 중심일 수 있음. 프레임워크는 **netlist/배치 경로**를 우선 노리되,
+     ADE 연계가 필요하면 SKILL/배치 훅 확인(§4).
+
+4. **통계·BER 분석 강화**
+   - 시간영역 시뮬레이션 중 신호의 **통계적 특성 계산**(전통 몬테카를로 대비 큰 가속), **BER(비트오류율) 분석**,
+     아날로그-디지털 co-simulation 지원. 프리미티브는 **delay·voltage noise·jitter** 같은 설계 파라미터 보유.
+   - → `analysis/`에 BER/지터/노이즈 통계 측정을 1급 기능으로 포함.
+
+5. **성능·검증 레퍼런스**
+   - 트랜지스터 레벨 혼성신호 회로의 시스템 레벨 성능 평가에서 **SPICE 대비 >300배** 가속 사례(성균관대) 보고.
+     (XMODEL의 일반 주장 10~100배보다 높은 케이스도 존재.)
+
+6. **생태계·채널 (제품 기능은 아니나 도입 환경에 영향)**
+   - **BetaSoft Consulting**과 북미 **유통/기술지원** 계약(2022~). 한국 대학에 XMODEL 기증 프로그램. Mentor vReady, Cadence Connections 등 EDA 파트너십.
+   - 2025-04-30 및 2026-02-23자 보도자료(BusinessWire)가 존재하나 **본문 미수신** → §4에서 사내 자료/뉴스로 내용 확인 권장. `⚠️ 검증필요`
+
+> **요약**: 최근 흐름의 무게중심은 ① **실리콘 포토닉스로의 도메인 확장**(가장 큰 신규 기능), ② **데이터컨버터/
+> 메모리/이미지센서 등 응용 모델 사례 축적**, ③ **Cadence ADE 통합 심화**, ④ **통계/BER 분석**이다.
+> 프레임워크 설계 시 포토닉스 프리미티브와 도메인별 측정 지표를 처음부터 확장 포인트로 열어둘 것.
+
 ---
 
 ## 3. 프레임워크 아키텍처 (XMODEL × LLM)
@@ -376,6 +420,19 @@ matplotlib (선택)    # 파형 플롯/리포트 그림
 - A UVM SystemVerilog Testbench for AMS Verification (DVCon): https://dvcon-proceedings.org/wp-content/uploads/A-UVM-SystemVerilog-Testbench-for-AnalogMixed-Signal-Verification-A-Digitally-Programmable-Analog-Filter-Example.pdf
 - SNU MICS XMODEL wiki: https://mics.snu.ac.kr/wiki/xmodel
 - (참고) AMSNet: Netlist Dataset for AMS Circuits: https://arxiv.org/pdf/2405.09045
+
+**최신 기능(2024–2026) 관련 출처**
+- 실리콘 포토닉스 모델링 (ASP-DAC 2025 초청논문, ACM DL): https://dl.acm.org/doi/10.1145/3658617.3703934
+- 실리콘 포토닉스 모델링 (ASP-DAC 2025 PDF): https://www.aspdac.com/aspdac2025/archive/pdf/1F-3.pdf
+- Silicon Photonics in SystemVerilog (IEEE/SSCS 웨비나): https://resourcecenter.ieee.org/education/webinars/sscsweb4113
+- AVM 뉴스레터(월간) 인덱스: https://www.scianalog.com/avm/
+- AVM 2024년 12월호(포토닉스): https://www.scianalog.com/avm/december-2024/
+- Cadence Connections EDA Program 합류: https://www.scianalog.com/news/cadence-connection/
+- GLISTER–Cadence ADE 통합: https://www.scianalog.com/news/glister-ade/
+- BetaSoft Consulting 북미 유통 제휴: https://www.scianalog.com/news/betasoft/
+- 한국 대학 XMODEL 기증: https://www.scianalog.com/news/donates/
+- (미수신, 후속확인) BusinessWire 2025-04-30: https://www.businesswire.com/news/home/20250430198391/en
+- (미수신, 후속확인) BusinessWire 2026-02-23: https://www.businesswire.com/news/home/20260223136471/en
 
 ---
 
